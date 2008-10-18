@@ -1,5 +1,4 @@
-# $Id: SheepShaver.spec,v 1.1 2008/10/18 14:04:25 thl Exp $
-# Authority: matthias
+%define _default_patch_fuzz 2
 
 %{?dist: %{expand: %%define %dist 1}}
 %{?fedora: %{expand: %%define fc%{fedora} 1}}
@@ -110,6 +109,7 @@ desktop-file-install --vendor %{desktop_vendor} \
 %changelog
 * Sat Oct 18 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 2.3-0.4.20060514.fc7
 - rebuild for RPM Fusion
+- define _default_patch_fuzz 2
 
 * Sun Jun 25 2006 Matthias Saou <http://freshrpms.net/> 2.3-0.3.20060514
 - Update to 2.3-0.20060514.1.
