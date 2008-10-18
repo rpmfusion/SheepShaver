@@ -1,8 +1,5 @@
 %define _default_patch_fuzz 2
 
-%{?dist: %{expand: %%define %dist 1}}
-%{?fedora: %{expand: %%define fc%{fedora} 1}}
-
 %{!?dist:%define _with_modxorg 1}
 %{?el5:  %define _with_modxorg 1}
 %{?fc7:  %define _with_modxorg 1}
@@ -16,7 +13,7 @@
 Summary: Power Macintosh emulator
 Name: SheepShaver
 Version: 2.3
-Release: 0.4.%{date}.fc7
+Release: 0.4.%{date}%{?dist}
 License: GPL
 Group: Applications/Emulators
 URL: http://www.gibix.net/projects/sheepshaver/
