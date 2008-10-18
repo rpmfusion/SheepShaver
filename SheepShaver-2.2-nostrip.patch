@@ -1,7 +1,7 @@
-diff -Naupr SheepShaver-2.2.orig/src/Unix/Makefile.in SheepShaver-2.2/src/Unix/Makefile.in
---- SheepShaver-2.2.orig/src/Unix/Makefile.in	2005-03-09 18:10:07.000000000 +0100
-+++ SheepShaver-2.2/src/Unix/Makefile.in	2005-04-02 21:15:26.000000000 +0200
-@@ -33,7 +33,7 @@ BLESS = @BLESS@
+diff -up SheepShaver-2.3/src/Unix/Makefile.in.nostrip SheepShaver-2.3/src/Unix/Makefile.in
+--- SheepShaver-2.3/src/Unix/Makefile.in.nostrip	2006-05-08 19:19:45.000000000 +0200
++++ SheepShaver-2.3/src/Unix/Makefile.in	2008-10-18 21:37:07.000000000 +0200
+@@ -35,7 +35,7 @@ BLESS = @BLESS@
  EXEEXT = @EXEEXT@
  KEYCODES = @KEYCODES@
  INSTALL = @INSTALL@
@@ -9,4 +9,4 @@ diff -Naupr SheepShaver-2.2.orig/src/Unix/Makefile.in SheepShaver-2.2/src/Unix/M
 +INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_DATA = @INSTALL_DATA@
  
- # Append disassembler to dyngen, if available
+ SLIRP_CFLAGS = @SLIRP_CFLAGS@

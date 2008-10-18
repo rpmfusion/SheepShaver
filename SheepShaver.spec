@@ -1,26 +1,24 @@
-%define _default_patch_fuzz 2
-
 %define date 20060514
-%define mon_version 3.1
+%define mon_version 3.2
 %define desktop_vendor rpmforge
 
 Summary: Power Macintosh emulator
 Name: SheepShaver
 Version: 2.3
-Release: 0.4.%{date}%{?dist}
-License: GPL
+Release: 0.5.%{date}%{?dist}
+License: GPLv2+
 Group: Applications/Emulators
 URL: http://www.gibix.net/projects/sheepshaver/
 Source0: http://www.gibix.net/projects/sheepshaver/files/SheepShaver-%{version}-0.%{date}.1.tar.bz2
-Source1: http://wwwthep.physik.uni-mainz.de/~cbauer/cxmon-%{mon_version}.tar.gz
+Source1: http://cxmon.cebix.net/downloads/cxmon-%{mon_version}.tar.gz
 Source2: SheepShaver.png
 Patch0: SheepShaver-2.2-nostrip.patch
+Patch1: SheepShaver-2.3-gcc43.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: gcc-c++, gtk2-devel, esound-devel >= 0.2.8
 BuildRequires: desktop-file-utils, readline-devel
 %{?_with_sdl:BuildRequires: SDL-devel}
-BuildRequires: libXt-devel
-#BuildRequires: SDL-devel
+BuildRequires: libXt-devel, libXxf86dga-devel, libXxf86vm-devel
 # Other archs need an instruction skipper on well-known invalid
 # memory references (e.g. illegal writes to ROM).
 ExclusiveArch: i386 ppc x86_64
@@ -40,8 +38,9 @@ Available rebuild options :
 
 
 %prep
-%setup -a 1
+%setup -q -a 1
 %patch0 -p1 -b .nostrip
+%patch1 -p1 -b .gcc43
 
 
 %build
@@ -50,7 +49,8 @@ pushd src/Unix
     --datadir=%{_sysconfdir} \
     %{!?_without_mon: --with-mon=../../cxmon-%{mon_version}/src} \
     %{?_with_sdl: --enable-sdl-video --enable-sdl-audio}
-    %{__make} %{?_smp_mflags}
+%{__mkdir} obj
+%{__make} %{?_smp_mflags}
 popd
 
 
@@ -58,6 +58,7 @@ popd
 %{__rm} -rf %{buildroot}
 %makeinstall -C src/Unix \
     datadir="%{buildroot}%{_sysconfdir}"
+chmod +x %{buildroot}%{_sysconfdir}/%{name}/tunconfig
 
 # Create the system menu entry
 %{__cat} > %{name}.desktop << EOF
@@ -68,8 +69,7 @@ Exec=SheepShaver
 Icon=SheepShaver.png
 Terminal=false
 Type=Application
-Categories=Application;Utility;
-Encoding=UTF-8
+Categories=Game;Emulator;
 EOF
 
 %{__mkdir_p} %{buildroot}%{_datadir}/applications
@@ -89,8 +89,8 @@ desktop-file-install --vendor %{desktop_vendor} \
 %defattr(-, root, root, 0755)
 %doc COPYING NEWS doc/Linux/*
 %dir %{_sysconfdir}/SheepShaver/
-%config %{_sysconfdir}/SheepShaver/keycodes
-%config %{_sysconfdir}/SheepShaver/tunconfig
+%config(noreplace) %{_sysconfdir}/SheepShaver/keycodes
+%{_sysconfdir}/SheepShaver/tunconfig
 %{_bindir}/SheepShaver
 %{_datadir}/pixmaps/SheepShaver.png
 %{_datadir}/applications/%{desktop_vendor}-%{name}.desktop
@@ -98,7 +98,15 @@ desktop-file-install --vendor %{desktop_vendor} \
 
 
 %changelog
-* Sat Oct 18 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 2.3-0.4.20060514.fc7
+* Sat Oct 18 2008 Hans de Goede <j.w.r.degoede@hhs.nl> - 2.3-0.5.20060514
+- Updated release of cxmon to 3.2
+- Fix compilation with gcc-4.3 (tricky, esp. on x86_64)
+- Regenerate Patch0, nuke _default_patch_fuzz 2
+- Fixup desktop file Categories, so that we show up under the Emulators menu
+- Make rpmlint like this package
+- Add missing libXxf86dga-devel, libXxf86vm-devel BuildRequires
+
+* Sat Oct 18 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 2.3-0.4.20060514
 - rebuild for RPM Fusion
 - define _default_patch_fuzz 2
 - ExclusiveArch: i386 instead of ix86 to prevent plague building this for 
