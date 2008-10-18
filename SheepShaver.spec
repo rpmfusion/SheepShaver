@@ -1,11 +1,5 @@
 %define _default_patch_fuzz 2
 
-%{!?dist:%define _with_modxorg 1}
-%{?el5:  %define _with_modxorg 1}
-%{?fc7:  %define _with_modxorg 1}
-%{?fc6:  %define _with_modxorg 1}
-%{?fc5:  %define _with_modxorg 1}
-
 %define date 20060514
 %define mon_version 3.1
 %define desktop_vendor rpmforge
@@ -25,11 +19,11 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: gcc-c++, gtk2-devel, esound-devel >= 0.2.8
 BuildRequires: desktop-file-utils, readline-devel
 %{?_with_sdl:BuildRequires: SDL-devel}
-%{?_with_modxorg:BuildRequires: libXt-devel}
+BuildRequires: libXt-devel
 #BuildRequires: SDL-devel
 # Other archs need an instruction skipper on well-known invalid
 # memory references (e.g. illegal writes to ROM).
-ExclusiveArch: %{ix86} ppc x86_64
+ExclusiveArch: i386 ppc x86_64
 
 %description
 SheepShaver is a MacOS run-time environment that allows you to run classic
@@ -107,6 +101,9 @@ desktop-file-install --vendor %{desktop_vendor} \
 * Sat Oct 18 2008 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info - 2.3-0.4.20060514.fc7
 - rebuild for RPM Fusion
 - define _default_patch_fuzz 2
+- ExclusiveArch: i386 instead of ix86 to prevent plague building this for 
+  athlon and other ix86 archs
+- always build for x.org
 
 * Sun Jun 25 2006 Matthias Saou <http://freshrpms.net/> 2.3-0.3.20060514
 - Update to 2.3-0.20060514.1.
