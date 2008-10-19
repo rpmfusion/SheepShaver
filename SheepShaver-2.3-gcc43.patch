@@ -1,0 +1,203 @@
+diff -up SheepShaver-2.3/src/Unix/sys_unix.cpp~ SheepShaver-2.3/src/Unix/sys_unix.cpp
+--- SheepShaver-2.3/src/Unix/sys_unix.cpp~	2008-10-18 21:38:50.000000000 +0200
++++ SheepShaver-2.3/src/Unix/sys_unix.cpp	2008-10-18 21:38:50.000000000 +0200
+@@ -23,6 +23,7 @@
+ #include <sys/ioctl.h>
+ #include <sys/stat.h>
+ #include <errno.h>
++#include <limits.h>
+ 
+ #ifdef HAVE_AVAILABILITYMACROS_H
+ #include <AvailabilityMacros.h>
+diff -up SheepShaver-2.3/src/Unix/sigsegv.cpp~ SheepShaver-2.3/src/Unix/sigsegv.cpp
+--- SheepShaver-2.3/src/Unix/sigsegv.cpp~	2008-10-18 23:10:53.000000000 +0200
++++ SheepShaver-2.3/src/Unix/sigsegv.cpp	2008-10-18 23:10:53.000000000 +0200
+@@ -2293,7 +2293,8 @@ int main(void)
+ #define TEST_SKIP_INSTRUCTION(TYPE) do {				\
+ 		const unsigned long TAG = 0x12345678 |			\
+ 		(sizeof(long) == 8 ? 0x9abcdef0UL << 31 : 0);	\
+-		TYPE data = *((TYPE *)(page + sizeof(TYPE)));	\
++		volatile TYPE data = 0;			\
++		data = *((TYPE *)(page + sizeof(TYPE)));	\
+ 		volatile unsigned long effect = data + TAG;		\
+ 		if (effect != TAG)								\
+ 			return 9;									\
+diff -up SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-cpu.cpp~ SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-cpu.cpp
+--- SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-cpu.cpp~	2008-10-18 21:57:15.000000000 +0200
++++ SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-cpu.cpp	2008-10-18 21:57:15.000000000 +0200
+@@ -256,7 +256,7 @@ void powerpc_cpu::initialize()
+ 
+ 	// Initialize block lookup table
+ #if PPC_DECODE_CACHE || PPC_ENABLE_JIT
+-	block_cache.initialize();
++	blockcache.initialize();
+ #endif
+ 
+ 	// Init cache range invalidate recorder
+@@ -540,7 +540,7 @@ void *powerpc_cpu::compile_chain_block(b
+ 	const uint32 bpc = sbi->pc;
+ 
+ 	const uint32 tpc = sbi->li[n].jmp_pc;
+-	block_info *tbi = block_cache.find(tpc);
++	block_info *tbi = blockcache.find(tpc);
+ 	if (tbi == NULL)
+ 		tbi = compile_block(tpc);
+ 	assert(tbi && tbi->pc == tpc);
+@@ -562,7 +562,7 @@ void powerpc_cpu::execute(uint32 entry)
+ 	if (execute_depth == 1 || (PPC_ENABLE_JIT && PPC_REENTRANT_JIT)) {
+ #if PPC_ENABLE_JIT
+ 		if (use_jit) {
+-			block_info *bi = block_cache.find(pc());
++			block_info *bi = blockcache.find(pc());
+ 			if (bi == NULL)
+ 				bi = compile_block(pc());
+ 			for (;;) {
+@@ -585,7 +585,7 @@ void powerpc_cpu::execute(uint32 entry)
+ 					// Don't check for backward branches here as this
+ 					// is now done by generated code. Besides, we will
+ 					// get here if the fast cache lookup failed too.
+-					if ((bi = block_cache.find(pc())) == NULL)
++					if ((bi = blockcache.find(pc())) == NULL)
+ 						break;
+ 				}
+ 
+@@ -596,7 +596,7 @@ void powerpc_cpu::execute(uint32 entry)
+ 		}
+ #endif
+ #if PPC_DECODE_CACHE
+-		block_info *bi = block_cache.find(pc());
++		block_info *bi = blockcache.find(pc());
+ 		if (bi != NULL)
+ 			goto pdi_execute;
+ 		for (;;) {
+@@ -606,7 +606,7 @@ void powerpc_cpu::execute(uint32 entry)
+ 			clock_t start_time;
+ 			start_time = clock();
+ #endif
+-			bi = block_cache.new_blockinfo();
++			bi = blockcache.new_blockinfo();
+ 			bi->init(pc());
+ 
+ 			// Predecode a new block
+@@ -656,8 +656,8 @@ void powerpc_cpu::execute(uint32 entry)
+ 			bi->min_pc = dpc;
+ 			bi->max_pc = entry;
+ 			bi->size = di - bi->di;
+-			block_cache.add_to_cl_list(bi);
+-			block_cache.add_to_active_list(bi);
++			blockcache.add_to_cl_list(bi);
++			blockcache.add_to_active_list(bi);
+ 			decode_cache_p += bi->size;
+ #if PPC_PROFILE_COMPILE_TIME
+ 			compile_time += (clock() - start_time);
+@@ -691,7 +691,7 @@ void powerpc_cpu::execute(uint32 entry)
+ 					}
+ 				}
+ 
+-				if ((bi->pc != pc()) && ((bi = block_cache.find(pc())) == NULL))
++				if ((bi->pc != pc()) && ((bi = blockcache.find(pc())) == NULL))
+ 					break;
+ 			}
+ 		}
+@@ -767,8 +767,8 @@ void powerpc_cpu::invalidate_cache()
+ {
+ 	D(bug("Invalidate all cache blocks\n"));
+ #if PPC_DECODE_CACHE || PPC_ENABLE_JIT
+-	block_cache.clear();
+-	block_cache.initialize();
++	blockcache.clear();
++	blockcache.initialize();
+ 	spcflags().set(SPCFLAG_JIT_EXEC_RETURN);
+ #endif
+ #if PPC_ENABLE_JIT
+@@ -811,6 +811,6 @@ void powerpc_cpu::invalidate_cache_range
+ 	}
+ #endif
+ 	spcflags().set(SPCFLAG_JIT_EXEC_RETURN);
+-	block_cache.clear_range(start, end);
++	blockcache.clear_range(start, end);
+ #endif
+ }
+diff -up SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-cpu.hpp~ SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-cpu.hpp
+--- SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-cpu.hpp~	2008-10-18 21:57:24.000000000 +0200
++++ SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-cpu.hpp	2008-10-18 21:57:24.000000000 +0200
+@@ -360,7 +360,7 @@ private:
+ 
+ 	// Block lookup table
+ 	typedef powerpc_block_info block_info;
+-	block_cache< block_info, lazy_allocator > block_cache;
++	block_cache< block_info, lazy_allocator > blockcache;
+ 
+ #if PPC_DECODE_CACHE
+ 	// Decode Cache
+diff -up SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-dyngen-ops.cpp~ SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-dyngen-ops.cpp
+--- SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-dyngen-ops.cpp~	2008-10-18 21:58:04.000000000 +0200
++++ SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-dyngen-ops.cpp	2008-10-18 21:59:27.000000000 +0200
+@@ -96,7 +96,7 @@ struct powerpc_dyngen_helper {
+ 	static uint64 & fp_result_dw()				{ return CPU->fp_result_dw(); }
+ 	static inline void set_cr(int crfd, int v)	{ CPU->cr().set(crfd, v); }
+ 
+-	static inline powerpc_block_info *find_block(uint32 pc) { return CPU->block_cache.fast_find(pc); }
++	static inline powerpc_block_info *find_block(uint32 pc) { return CPU->blockcache.fast_find(pc); }
+ };
+ 
+ // Semantic action templates
+@@ -1268,13 +1268,13 @@ static inline void do_lmw(void)
+ }
+ 
+ template<>
+-static inline void do_lmw<31>(void)
++inline void do_lmw<31>(void)
+ {
+ 	CPU->gpr(31) = vm_read_memory_4(T0);
+ }
+ 
+ template<>
+-static inline void do_lmw<32>(void)
++inline void do_lmw<32>(void)
+ {
+ 	for (uint32 r = PARAM1, ad = T0; r <= 31; r++, ad += 4)
+ 		CPU->gpr(r) = vm_read_memory_4(ad);
+@@ -1290,13 +1290,13 @@ static inline void do_stmw(void)
+ }
+ 
+ template<>
+-static inline void do_stmw<31>(void)
++inline void do_stmw<31>(void)
+ {
+ 	vm_write_memory_4(T0, CPU->gpr(31));
+ }
+ 
+ template<>
+-static inline void do_stmw<32>(void)
++inline void do_stmw<32>(void)
+ {
+ 	for (uint32 r = PARAM1, ad = T0; r <= 31; r++, ad += 4)
+ 		vm_write_memory_4(ad, CPU->gpr(r));
+diff -up SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-translate.cpp~ SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-translate.cpp
+--- SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-translate.cpp~	2008-10-18 22:00:22.000000000 +0200
++++ SheepShaver-2.3/src/kpx_cpu/src/cpu/ppc/ppc-translate.cpp	2008-10-18 22:00:22.000000000 +0200
+@@ -143,7 +143,7 @@ powerpc_cpu::compile_block(uint32 entry_
+ 	codegen_context_t cg_context(dg);
+ 	cg_context.entry_point = entry_point;
+   again:
+-	block_info *bi = block_cache.new_blockinfo();
++	block_info *bi = blockcache.new_blockinfo();
+ 	bi->init(entry_point);
+ 	bi->entry_point = dg.gen_start();
+ 
+@@ -1570,11 +1570,11 @@ powerpc_cpu::compile_block(uint32 entry_
+ #endif
+ 
+ 	dg.gen_end();
+-	block_cache.add_to_cl_list(bi);
++	blockcache.add_to_cl_list(bi);
+ 	if (is_read_only_memory(bi->pc))
+-		block_cache.add_to_dormant_list(bi);
++		blockcache.add_to_dormant_list(bi);
+ 	else
+-		block_cache.add_to_active_list(bi);
++		blockcache.add_to_active_list(bi);
+ #if PPC_PROFILE_COMPILE_TIME
+ 	compile_time += (clock() - start_time);
+ #endif
