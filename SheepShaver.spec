@@ -5,7 +5,7 @@
 Summary: Power Macintosh emulator
 Name: SheepShaver
 Version: 2.3
-Release: 0.5.%{date}%{?dist}
+Release: 0.6.%{date}%{?dist}
 License: GPLv2+
 Group: Applications/Emulators
 URL: http://www.gibix.net/projects/sheepshaver/
@@ -46,7 +46,7 @@ Available rebuild options :
 %build
 pushd src/Unix
 %configure \
-    --datadir=%{_sysconfdir} \
+    --datadir=%{_sysconfdir} --enable-ppc-emulator=yes \
     %{!?_without_mon: --with-mon=../../cxmon-%{mon_version}/src} \
     %{?_with_sdl: --enable-sdl-video --enable-sdl-audio}
 %{__mkdir} obj
@@ -98,6 +98,13 @@ desktop-file-install --vendor %{desktop_vendor} \
 
 
 %changelog
+* Sun Oct 19 2008 Hans de Goede <j.w.r.degoede@hhs.nl> - 2.3-0.6.20060514
+- Use ppc cpu emulator even when running on ppc, as using the native cpu
+  requires a private implementation of pthreads from:
+  src/Unix/Linux/sheepthreads.c
+  which depends on glibc pthread internals which are no longer exposed by
+  glibc and quite possibly changed
+
 * Sat Oct 18 2008 Hans de Goede <j.w.r.degoede@hhs.nl> - 2.3-0.5.20060514
 - Updated release of cxmon to 3.2
 - Fix compilation with gcc-4.3 (tricky, esp. on x86_64)
