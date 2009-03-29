@@ -5,7 +5,7 @@
 Summary: Power Macintosh emulator
 Name: SheepShaver
 Version: 2.3
-Release: 0.6.%{date}%{?dist}
+Release: 0.7.%{date}%{?dist}
 License: GPLv2+
 Group: Applications/Emulators
 URL: http://www.gibix.net/projects/sheepshaver/
@@ -98,6 +98,9 @@ desktop-file-install --vendor %{desktop_vendor} \
 
 
 %changelog
+* Sun Mar 29 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.3-0.7.20060514
+- rebuild for new F11 features
+
 * Sun Oct 19 2008 Hans de Goede <j.w.r.degoede@hhs.nl> - 2.3-0.6.20060514
 - Use ppc cpu emulator even when running on ppc, as using the native cpu
   requires a private implementation of pthreads from:
