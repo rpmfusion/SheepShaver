@@ -5,7 +5,7 @@
 Summary: Power Macintosh emulator
 Name: SheepShaver
 Version: 2.3
-Release: 0.7.%{date}%{?dist}
+Release: 0.8.%{date}%{?dist}
 License: GPLv2+
 Group: Applications/Emulators
 URL: http://www.gibix.net/projects/sheepshaver/
@@ -21,7 +21,7 @@ BuildRequires: desktop-file-utils, readline-devel
 BuildRequires: libXt-devel, libXxf86dga-devel, libXxf86vm-devel
 # Other archs need an instruction skipper on well-known invalid
 # memory references (e.g. illegal writes to ROM).
-ExclusiveArch: i386 ppc x86_64
+ExclusiveArch: i586 ppc x86_64
 
 %description
 SheepShaver is a MacOS run-time environment that allows you to run classic
@@ -98,6 +98,9 @@ desktop-file-install --vendor %{desktop_vendor} \
 
 
 %changelog
+* Sun Apr 12 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.3-0.8.20060514
+- s/i386/i586/ in ExclusiveArch for F11
+
 * Sun Mar 29 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.3-0.7.20060514
 - rebuild for new F11 features
 
