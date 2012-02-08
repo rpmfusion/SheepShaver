@@ -5,7 +5,7 @@
 Summary: Power Macintosh emulator
 Name: SheepShaver
 Version: 2.3
-Release: 0.8.%{date}%{?dist}
+Release: 0.9.%{date}%{?dist}
 License: GPLv2+
 Group: Applications/Emulators
 URL: http://www.gibix.net/projects/sheepshaver/
@@ -98,6 +98,9 @@ desktop-file-install --vendor %{desktop_vendor} \
 
 
 %changelog
+* Wed Feb 08 2012 Nicolas Chauvet <kwizart@gmail.com> - 2.3-0.9.20060514
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Sun Apr 12 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.3-0.8.20060514
 - s/i386/i586/ in ExclusiveArch for F11
 
