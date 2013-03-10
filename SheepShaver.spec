@@ -1,27 +1,26 @@
-%define date 20060514
+%define date 20130310
 %define mon_version 3.2
-%define desktop_vendor rpmforge
 
-Summary: Power Macintosh emulator
-Name: SheepShaver
-Version: 2.3
-Release: 0.11.%{date}%{?dist}
-License: GPLv2+
-Group: Applications/Emulators
-URL: http://www.gibix.net/projects/sheepshaver/
-Source0: http://www.gibix.net/projects/sheepshaver/files/SheepShaver-%{version}-0.%{date}.1.tar.bz2
-Source1: http://cxmon.cebix.net/downloads/cxmon-%{mon_version}.tar.gz
-Source2: SheepShaver.png
-Patch0: SheepShaver-2.2-nostrip.patch
-Patch1: SheepShaver-2.3-gcc43.patch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires: gcc-c++, gtk2-devel, esound-devel >= 0.2.8
-BuildRequires: desktop-file-utils, readline-devel
-%{?_with_sdl:BuildRequires: SDL-devel}
-BuildRequires: libXt-devel, libXxf86dga-devel, libXxf86vm-devel
+Summary:        Power Macintosh emulator
+Name:           SheepShaver
+Version:        2.3
+Release:        0.12.%{date}%{?dist}
+License:        GPLv2+
+URL:            http://sheepshaver.cebix.net/
+# GRRR github, no url ...
+Source0:        macemu-master.zip
+Source1:        cxmon-3.2-cvs20130310.tar.gz
+Source2:        SheepShaver.png
+Patch0:         SheepShaver-no-strip.patch
+Patch1:         SheepShaver-disk-scan-crash.patch
+Patch2:         cxmon-3.2-hide-symbols.patch
+BuildRequires:  libtool gcc-c++ gtk2-devel
+BuildRequires:  desktop-file-utils readline-devel
+BuildRequires:  libXt-devel libXxf86vm-devel SDL-devel
+Requires:       hicolor-icon-theme
 # Other archs need an instruction skipper on well-known invalid
 # memory references (e.g. illegal writes to ROM).
-ExclusiveArch: i586 ppc x86_64
+ExclusiveArch:  i686 x86_64 ppc
 
 %description
 SheepShaver is a MacOS run-time environment that allows you to run classic
@@ -32,33 +31,33 @@ If you are using a PowerPC-based system, applications will run at native
 speed (i.e. with no emulation involved). There is also a built-in PowerPC
 G4 emulator, without MMU support, for non-PowerPC systems.
 
-Available rebuild options :
---without : mon
---with    : sdl
-
 
 %prep
-%setup -q -a 1
-%patch0 -p1 -b .nostrip
-%patch1 -p1 -b .gcc43
+%setup -q -a 1 -n macemu-master
+%patch0 -p1
+%patch1 -p1
+pushd cxmon-%{mon_version}
+%patch2 -p1
+popd
+chmod -x SheepShaver/src/kpx_cpu/src/mathlib/ieeefp.hpp
 
 
 %build
-pushd src/Unix
-%configure \
-    --datadir=%{_sysconfdir} --enable-ppc-emulator=yes \
-    %{!?_without_mon: --with-mon=../../cxmon-%{mon_version}/src} \
-    %{?_with_sdl: --enable-sdl-video --enable-sdl-audio}
-%{__mkdir} obj
-%{__make} %{?_smp_mflags}
+pushd SheepShaver/src/Unix
+NO_CONFIGURE=1 ./autogen.sh
+export CXXFLAGS="$RPM_OPT_FLAGS -fpermissive"
+%configure --datadir=%{_sysconfdir} --enable-ppc-emulator=yes \
+    --with-mon=../../../cxmon-%{mon_version}/src \
+    --disable-xf86-dga --enable-sdl-audio --with-bincue
+make %{?_smp_mflags}
 popd
 
 
 %install
-%{__rm} -rf %{buildroot}
-%makeinstall -C src/Unix \
-    datadir="%{buildroot}%{_sysconfdir}"
-chmod +x %{buildroot}%{_sysconfdir}/%{name}/tunconfig
+pushd SheepShaver/src/Unix
+make install DESTDIR=$RPM_BUILD_ROOT
+popd
+chmod +x $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/tunconfig
 
 # Create the system menu entry
 %{__cat} > %{name}.desktop << EOF
@@ -66,38 +65,55 @@ chmod +x %{buildroot}%{_sysconfdir}/%{name}/tunconfig
 Name=Sheep Shaver
 Comment=Power Macintosh Emulator
 Exec=SheepShaver
-Icon=SheepShaver.png
+Icon=SheepShaver
 Terminal=false
 Type=Application
 Categories=Game;Emulator;
 EOF
 
-%{__mkdir_p} %{buildroot}%{_datadir}/applications
-desktop-file-install --vendor %{desktop_vendor} \
-    --dir %{buildroot}%{_datadir}/applications \
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
+desktop-file-install --dir $RPM_BUILD_ROOT%{_datadir}/applications \
+%if 0%{?fedora} && 0%{?fedora} < 19
+    --vendor rpmforge \
+%endif
     %{name}.desktop
 
-%{__install} -D -p -m 0644 %{SOURCE2} \
-    %{buildroot}%{_datadir}/pixmaps/SheepShaver.png
+install -D -p -m 0644 %{SOURCE2} \
+    %{buildroot}%{_datadir}/icons/hicolor/32x32/apps/SheepShaver.png
 
 
-%clean
-%{__rm} -rf %{buildroot}
+%post
+touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+
+%postun
+if [ $1 -eq 0 ] ; then
+    touch --no-create %{_datadir}/icons/hicolor &>/dev/null
+    gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
+fi
+
+%posttrans
+gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %files
-%defattr(-, root, root, 0755)
-%doc COPYING NEWS doc/Linux/*
+%doc SheepShaver/COPYING SheepShaver/NEWS SheepShaver/doc/Linux/*
 %dir %{_sysconfdir}/SheepShaver/
 %config(noreplace) %{_sysconfdir}/SheepShaver/keycodes
 %{_sysconfdir}/SheepShaver/tunconfig
 %{_bindir}/SheepShaver
-%{_datadir}/pixmaps/SheepShaver.png
-%{_datadir}/applications/%{desktop_vendor}-%{name}.desktop
+%{_datadir}/icons/hicolor/32x32/apps/SheepShaver.png
+%{_datadir}/applications/*%{name}.desktop
 %{_mandir}/man1/SheepShaver.1*
 
 
 %changelog
+* Sun Mar 10 2013 Hans de Goede <j.w.r.degoede@gmail.com> - 2.3-0.12.20130310
+- New upstream: http://sheepsaver.cebix.net/
+- Uses github, no source tarbals :| Update to todays git master (bbc0af47)
+- Modernize spec
+- Fix FTBFS (since F-11 !)
+- Switch from esound (deprecated / obsolete) to SDL for sound output
+
 * Sun Mar 03 2013 Nicolas Chauvet <kwizart@gmail.com> - 2.3-0.11.20060514
 - Mass rebuilt for Fedora 19 Features
 
