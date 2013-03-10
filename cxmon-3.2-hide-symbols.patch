@@ -1,0 +1,71 @@
+diff -up cxmon-3.2/src/mon_disass.cpp~ cxmon-3.2/src/mon_disass.cpp
+--- cxmon-3.2/src/mon_disass.cpp~	2007-06-07 11:51:56.000000000 +0200
++++ cxmon-3.2/src/mon_disass.cpp	2013-03-10 23:18:29.846310333 +0100
+@@ -41,21 +41,21 @@ bool mon_macos_mode = false;
+ extern "C" {
+ #include "disass/dis-asm.h"
+ 
+-int buffer_read_memory(bfd_vma from, bfd_byte *to, unsigned int length, struct disassemble_info *info)
++static int buffer_read_memory(bfd_vma from, bfd_byte *to, unsigned int length, struct disassemble_info *info)
+ {
+ 	while (length--)
+ 		*to++ = mon_read_byte(from++);
+ 	return 0;
+ }
+ 
+-void perror_memory(int status, bfd_vma memaddr, struct disassemble_info *info)
++static void perror_memory(int status, bfd_vma memaddr, struct disassemble_info *info)
+ {
+ 	info->fprintf_func(info->stream, "Unknown error %d\n", status);
+ }
+ 
+-bool lookup_lowmem;
++static bool lookup_lowmem;
+ 
+-void generic_print_address(bfd_vma addr, struct disassemble_info *info)
++static void generic_print_address(bfd_vma addr, struct disassemble_info *info)
+ {
+ 	if (lookup_lowmem && addr >= 0x100 && addr < 0x3000) {
+ 		if (((addr >= 0x400 && addr < 0x800) || (addr >= 0xe00 && addr < 0x1e00)) && ((addr & 3) == 0)) {
+@@ -91,7 +91,7 @@ void generic_print_address(bfd_vma addr,
+ 		info->fprintf_func(info->stream, "$%08x", (uint32)addr);
+ }
+ 
+-int generic_symbol_at_address(bfd_vma addr, struct disassemble_info *info)
++static int generic_symbol_at_address(bfd_vma addr, struct disassemble_info *info)
+ {
+ 	return 0;
+ }
+diff -up cxmon-3.2/src/disass/dis-asm.h~ cxmon-3.2/src/disass/dis-asm.h
+--- cxmon-3.2/src/disass/dis-asm.h~	2002-09-07 14:48:15.000000000 +0200
++++ cxmon-3.2/src/disass/dis-asm.h	2013-03-10 23:22:15.510311199 +0100
+@@ -249,29 +249,6 @@ extern disassembler_ftype disassembler	P
+ extern void disassembler_usage          PARAMS ((FILE *));
+ 
+ 
+-/* This block of definitions is for particular callers who read instructions
+-   into a buffer before calling the instruction decoder.  */
+-
+-/* Here is a function which callers may wish to use for read_memory_func.
+-   It gets bytes from a buffer.  */
+-extern int buffer_read_memory
+-  PARAMS ((bfd_vma, bfd_byte *, unsigned int, struct disassemble_info *));
+-
+-/* This function goes with buffer_read_memory.
+-   It prints a message using info->fprintf_func and info->stream.  */
+-extern void perror_memory PARAMS ((int, bfd_vma, struct disassemble_info *));
+-
+-
+-/* Just print the address in hex.  This is included for completeness even
+-   though both GDB and objdump provide their own (to print symbolic
+-   addresses).  */
+-extern void generic_print_address
+-  PARAMS ((bfd_vma, struct disassemble_info *));
+-
+-/* Always true.  */
+-extern int generic_symbol_at_address
+-  PARAMS ((bfd_vma, struct disassemble_info *));
+-
+ /* Macro to initialize a disassemble_info struct.  This should be called
+    by all applications creating such a struct.  */
+ #define INIT_DISASSEMBLE_INFO(INFO, STREAM, FPRINTF_FUNC) \
