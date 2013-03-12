@@ -23,7 +23,7 @@ BuildRequires:  libXt-devel libXxf86vm-devel SDL-devel
 Requires:       hicolor-icon-theme
 # Other archs need an instruction skipper on well-known invalid
 # memory references (e.g. illegal writes to ROM).
-ExclusiveArch:  i686 x86_64 ppc
+ExclusiveArch:  %{ix86} x86_64 ppc
 
 %description
 SheepShaver is a MacOS run-time environment that allows you to run classic
@@ -50,7 +50,11 @@ chmod -x SheepShaver/src/kpx_cpu/src/mathlib/ieeefp.hpp
 pushd SheepShaver/src/Unix
 NO_CONFIGURE=1 ./autogen.sh
 export CXXFLAGS="$RPM_OPT_FLAGS -fpermissive"
+# Note no jit on i686 as it fails to build with gcc-4.7 (fixed in f19/gcc-4.8)
 %configure --datadir=%{_sysconfdir} --enable-ppc-emulator=yes \
+%ifarch %{ix86}
+    --disable-jit \
+%endif
     --with-mon=../../../cxmon-%{mon_version}/src \
     --disable-xf86-dga --enable-sdl-audio --with-bincue
 make %{?_smp_mflags}
