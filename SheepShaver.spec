@@ -12,8 +12,11 @@ Source0:        macemu-master.zip
 Source1:        cxmon-3.2-cvs20130310.tar.gz
 Source2:        SheepShaver.png
 Patch0:         SheepShaver-no-strip.patch
-Patch1:         SheepShaver-disk-scan-crash.patch
-Patch2:         cxmon-3.2-hide-symbols.patch
+Patch1:         SheepShaver-configure-fix.patch
+# SheepShaver uses BasiliskII's sys_unix.cpp through a symlink
+Patch2:         BasiliskII-disk-scan-crash.patch
+# Patch 10 because this is for Source1 rather then Source0
+Patch10:        cxmon-3.2-hide-symbols.patch
 BuildRequires:  libtool gcc-c++ gtk2-devel
 BuildRequires:  desktop-file-utils readline-devel
 BuildRequires:  libXt-devel libXxf86vm-devel SDL-devel
@@ -36,8 +39,9 @@ G4 emulator, without MMU support, for non-PowerPC systems.
 %setup -q -a 1 -n macemu-master
 %patch0 -p1
 %patch1 -p1
-pushd cxmon-%{mon_version}
 %patch2 -p1
+pushd cxmon-%{mon_version}
+%patch10 -p1
 popd
 chmod -x SheepShaver/src/kpx_cpu/src/mathlib/ieeefp.hpp
 
