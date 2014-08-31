@@ -4,7 +4,7 @@
 Summary:        Power Macintosh emulator
 Name:           SheepShaver
 Version:        2.3
-Release:        0.12.%{date}%{?dist}
+Release:        0.13.%{date}%{?dist}
 License:        GPLv2+
 URL:            http://sheepshaver.cebix.net/
 # GRRR github, no url ...
@@ -111,6 +111,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %changelog
+* Sun Aug 31 2014 Sérgio Basto <sergio@serjux.com> - 2.3-0.13.20130310
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Sun Mar 10 2013 Hans de Goede <j.w.r.degoede@gmail.com> - 2.3-0.12.20130310
 - New upstream: http://sheepsaver.cebix.net/
 - Uses github, no source tarbals :| Update to todays git master (bbc0af47)
