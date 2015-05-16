@@ -1,22 +1,19 @@
-%define date 20130310
+%define date 20150516
 %define mon_version 3.2
 
 Summary:        Power Macintosh emulator
 Name:           SheepShaver
-Version:        2.3
-Release:        0.13.%{date}%{?dist}
+Version:        2.4
+Release:        0.1.%{date}%{?dist}
 License:        GPLv2+
 URL:            http://sheepshaver.cebix.net/
 # GRRR github, no url ...
 Source0:        macemu-master.zip
 Source1:        cxmon-3.2-cvs20130310.tar.gz
 Source2:        SheepShaver.png
-Patch0:         SheepShaver-no-strip.patch
-Patch1:         SheepShaver-configure-fix.patch
-# SheepShaver uses BasiliskII's sys_unix.cpp through a symlink
-Patch2:         BasiliskII-disk-scan-crash.patch
-# Patch 10 because this is for Source1 rather then Source0
+# Patch 10+ because this is for Source1 rather then Source0
 Patch10:        cxmon-3.2-hide-symbols.patch
+Patch11:        cxmon-3.2-strfmt.patch
 BuildRequires:  libtool gcc-c++ gtk2-devel
 BuildRequires:  desktop-file-utils readline-devel
 BuildRequires:  libXt-devel libXxf86vm-devel SDL-devel
@@ -37,11 +34,9 @@ G4 emulator, without MMU support, for non-PowerPC systems.
 
 %prep
 %setup -q -a 1 -n macemu-master
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
 pushd cxmon-%{mon_version}
 %patch10 -p1
+%patch11 -p1
 popd
 chmod -x SheepShaver/src/kpx_cpu/src/mathlib/ieeefp.hpp
 
@@ -53,7 +48,9 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fpermissive"
 %configure --datadir=%{_sysconfdir} --enable-ppc-emulator=yes \
     --with-mon=../../../cxmon-%{mon_version}/src \
     --disable-xf86-dga --enable-sdl-audio --with-bincue
-make %{?_smp_mflags}
+DYNGEN_CFLAGS="$(echo $RPM_OPT_FLAGS | sed s/-fstack-protector-strong//)"
+make %{?_smp_mflags} \
+    DYNGEN_CFLAGS="$DYNGEN_CFLAGS" DYNGEN_CXXFLAGS="$DYNGEN_CFLAGS"
 popd
 
 
@@ -111,6 +108,10 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %changelog
+* Sat May 16 2015 Hans de Goede <j.w.r.degoede@gmail.com> - 2.4-0.1.20150516
+- SheepShaver 2.4 git snapshot du-jour
+- Fix FTBFS (rf#3634)
+
 * Sun Aug 31 2014 Sérgio Basto <sergio@serjux.com> - 2.3-0.13.20130310
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
@@ -172,7 +173,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 - Add --with sdl rebuild option.
 - Switch from gtk1 to new gtk2 GUI.
 
-* Sat Apr 21 2005 Matthias Saou <http://freshrpms.net/> 2.2-0.20050315
+* Thu Apr 21 2005 Matthias Saou <http://freshrpms.net/> 2.2-0.20050315
 - Spec file cleanup, based on the .src.rpm from the SheepShaver website.
 - Make cxmon support optionnal with --without mon.
 - Add menu entry.
