@@ -55,6 +55,7 @@ popd
 
 %build
 pushd %{name}/src/Unix
+mkdir obj
 %configure --datadir=%{_sysconfdir} --enable-ppc-emulator=yes \
     --disable-xf86-dga --enable-sdl-audio --with-bincue
 DYNGEN_CFLAGS="$(echo $RPM_OPT_FLAGS | sed s/-fstack-protector-strong//)"
