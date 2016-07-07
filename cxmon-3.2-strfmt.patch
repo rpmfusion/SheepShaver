@@ -1,6 +1,6 @@
-diff -up cxmon-3.2/src/mon.cpp~ cxmon-3.2/src/mon.cpp
---- cxmon-3.2/src/mon.cpp~	2010-02-21 12:58:33.000000000 +0100
-+++ cxmon-3.2/src/mon.cpp	2015-05-16 11:00:16.619745081 +0200
+diff -up cxmon-3.2/cxmon/src/mon.cpp~ cxmon-3.2/cxmon/src/mon.cpp
+--- cxmon-3.2/cxmon/src/mon.cpp~	2010-02-21 12:58:33.000000000 +0100
++++ cxmon-3.2/cxmon/src/mon.cpp	2015-05-16 11:00:16.619745081 +0200
 @@ -868,7 +868,7 @@ static void help_or_hunt()
  	}
  	fprintf(monout, "x                        Quit mon\n"

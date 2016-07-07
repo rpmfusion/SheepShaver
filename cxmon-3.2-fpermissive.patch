@@ -1,0 +1,72 @@
+diff -up macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/cxmon/src/mon.cpp~ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/cxmon/src/mon.cpp
+--- macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/cxmon/src/mon.cpp~	2016-03-22 10:27:20.000000000 +0100
++++ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/cxmon/src/mon.cpp	2016-03-22 10:30:18.671721029 +0100
+@@ -1112,7 +1112,7 @@ void mon_exit()
+  *  Main function, read-execute loop
+  */
+ 
+-void mon(int argc, char **argv)
++void mon(int argc, const char **argv)
+ {
+ 	bool done = false, interactive = true;
+ 
+diff -up macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/cxmon/src/mon.h~ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/cxmon/src/mon.h
+--- macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/cxmon/src/mon.h~	2016-01-31 16:00:57.000000000 +0100
++++ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/cxmon/src/mon.h	2016-03-22 10:30:19.137721654 +0100
+@@ -30,7 +30,7 @@
+ 
+ void mon_init();
+ void mon_exit();
+-void mon(int argc, char **argv);
++void mon(int argc, const char **argv);
+ 
+ 
+ /*
+diff -up macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-execute.cpp~ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-execute.cpp
+--- macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-execute.cpp~	2016-01-31 16:00:57.000000000 +0100
++++ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-execute.cpp	2016-07-07 14:44:00.099249460 +0200
+@@ -67,7 +67,7 @@ void powerpc_cpu::execute_illegal(uint32
+ 	disass_ppc(stdout, pc(), opcode);
+ 
+ 	// Start up mon in real-mode
+-	char *arg[4] = {"mon", "-m", "-r", NULL};
++	const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 	mon(3, arg);
+ #endif
+ 	abort();
+diff -up macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/sheepshaver_glue.cpp~ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/sheepshaver_glue.cpp
+--- macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/sheepshaver_glue.cpp~	2016-01-31 16:00:57.000000000 +0100
++++ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/sheepshaver_glue.cpp	2016-07-07 14:45:33.741857603 +0200
+@@ -83,7 +83,7 @@ static void enter_mon(void)
+ {
+ 	// Start up mon in real-mode
+ #if ENABLE_MON
+-	char *arg[4] = {"mon", "-m", "-r", NULL};
++	const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 	mon(3, arg);
+ #endif
+ }
+diff -up macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-cpu.cpp~ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-cpu.cpp
+--- macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-cpu.cpp~	2016-01-31 16:00:57.000000000 +0100
++++ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-cpu.cpp	2016-07-07 14:48:51.031138859 +0200
+@@ -527,7 +527,7 @@ bool powerpc_cpu::check_spcflags()
+ 		spcflags().clear(SPCFLAG_CPU_ENTER_MON);
+ #if ENABLE_MON
+ 		// Start up mon in real-mode
+-		char *arg[] = {
++		const char *arg[] = {
+ 			"mon",
+ #ifdef SHEEPSHAVER
+ 			"-m",
+diff -up macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-translate.cpp~ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-translate.cpp
+--- macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-translate.cpp~	2016-01-31 16:00:57.000000000 +0100
++++ macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu/src/cpu/ppc/ppc-translate.cpp	2016-07-07 14:48:12.805890613 +0200
+@@ -95,7 +95,7 @@ static void disasm_block(int target, uin
+ 			target == TARGET_POWERPC ? "d" : "x",
+ 			start, start + length - 1);
+ 
+-	char *arg[] = {"mon",
++	const char *arg[] = {"mon",
+ #ifdef SHEEPSHAVER
+ 				   "-m",
+ #endif

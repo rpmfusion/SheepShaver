@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component type="desktop">
+  <id>SheepShaver.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0+</project_license>
+  <name>SheepShaver</name>
+  <summary>MacOS run-time environment</summary>
+  <description>
+    <p>
+      SheepShaver is a MacOS run-time environment that allows you to run classic
+      MacOS applications inside the Linux multitasking environment. This means
+      that both Linux and MacOS applications can run at the same time (usually
+      in a window on the Linux desktop) and data can be exchanged between them.
+    </p>
+    <p>
+      If you are using a PowerPC-based system, applications will run at native
+      speed (i.e. with no emulation involved). There is also a built-in PowerPC
+      emulator for non-PowerPC systems. 
+    </p>
+  </description>
+  <url type="homepage">http://sheepshaver.cebix.net/</url>
+  <screenshots>
+    <screenshot type="default">http://simon.mooli.org.uk/LXF/AppleMacs/pix/SheepShaver_linux1.png</screenshot>
+  </screenshots>
+  <updatecontact>jwrdegoede_at_gmail.com</updatecontact>
+</component>

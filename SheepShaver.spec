@@ -1,21 +1,27 @@
-%define date 20150516
-%define mon_version 3.2
+%global commit b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
+%define date 20160322
+
+# Hardening breaks the jit
+%undefine _hardened_build
 
 Summary:        Power Macintosh emulator
 Name:           SheepShaver
 Version:        2.4
-Release:        0.1.%{date}%{?dist}
+Release:        0.2.%{date}%{?dist}
 License:        GPLv2+
 URL:            http://sheepshaver.cebix.net/
-# GRRR github, no url ...
-Source0:        macemu-master.zip
-Source1:        cxmon-3.2-cvs20130310.tar.gz
-Source2:        SheepShaver.png
-# Patch 10+ because this is for Source1 rather then Source0
+Source0:        https://github.com/cebix/macemu/archive/%{commit}/BasiliskII-1.0-%{shortcommit}.tar.gz
+Source1:        %{name}.desktop
+Source2:        %{name}.png
+Source3:        %{name}.appdata.xml
+Patch0:         macemu-not-finding-cxmon.patch
+# Patch 10+ because these are for cxmon
 Patch10:        cxmon-3.2-hide-symbols.patch
 Patch11:        cxmon-3.2-strfmt.patch
+Patch12:        cxmon-3.2-fpermissive.patch
 BuildRequires:  libtool gcc-c++ gtk2-devel
-BuildRequires:  desktop-file-utils readline-devel
+BuildRequires:  desktop-file-utils libappstream-glib readline-devel
 BuildRequires:  libXt-devel libXxf86vm-devel SDL-devel
 Requires:       hicolor-icon-theme
 # Other archs need an instruction skipper on well-known invalid
@@ -33,20 +39,23 @@ G4 emulator, without MMU support, for non-PowerPC systems.
 
 
 %prep
-%setup -q -a 1 -n macemu-master
-pushd cxmon-%{mon_version}
+%setup -q -n macemu-%{commit}
+%patch0 -p1
 %patch10 -p1
 %patch11 -p1
+%patch12 -p1
+sed -i 's/\r//' %{name}/src/Unix/tinyxml2.cpp
+chmod -x %{name}/src/Unix/tinyxml2.cpp %{name}/src/Unix/tinyxml2.h
+chmod -x %{name}/src/kpx_cpu/src/mathlib/ieeefp.hpp
+# autogen
+pushd %{name}/src/Unix
+NO_CONFIGURE=1 ./autogen.sh
 popd
-chmod -x SheepShaver/src/kpx_cpu/src/mathlib/ieeefp.hpp
 
 
 %build
-pushd SheepShaver/src/Unix
-NO_CONFIGURE=1 ./autogen.sh
-export CXXFLAGS="$RPM_OPT_FLAGS -fpermissive"
+pushd %{name}/src/Unix
 %configure --datadir=%{_sysconfdir} --enable-ppc-emulator=yes \
-    --with-mon=../../../cxmon-%{mon_version}/src \
     --disable-xf86-dga --enable-sdl-audio --with-bincue
 DYNGEN_CFLAGS="$(echo $RPM_OPT_FLAGS | sed s/-fstack-protector-strong//)"
 make %{?_smp_mflags} \
@@ -55,32 +64,21 @@ popd
 
 
 %install
-pushd SheepShaver/src/Unix
-make install DESTDIR=$RPM_BUILD_ROOT
+pushd %{name}/src/Unix
+%make_install
 popd
 chmod +x $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/tunconfig
 
-# Create the system menu entry
-%{__cat} > %{name}.desktop << EOF
-[Desktop Entry]
-Name=Sheep Shaver
-Comment=Power Macintosh Emulator
-Exec=SheepShaver
-Icon=SheepShaver
-Terminal=false
-Type=Application
-Categories=Game;Emulator;
-EOF
-
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
-desktop-file-install --dir $RPM_BUILD_ROOT%{_datadir}/applications \
-%if 0%{?fedora} && 0%{?fedora} < 19
-    --vendor rpmforge \
-%endif
-    %{name}.desktop
+desktop-file-install --dir $RPM_BUILD_ROOT%{_datadir}/applications %{SOURCE1}
 
 install -D -p -m 0644 %{SOURCE2} \
-    %{buildroot}%{_datadir}/icons/hicolor/32x32/apps/SheepShaver.png
+    %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/%{name}.png
+
+install -D -p -m 0644 %{SOURCE3} \
+    %{buildroot}%{_datadir}/appdata/%{name}.appdata.xml
+appstream-util validate-relax --nonet \
+    %{buildroot}%{_datadir}/appdata/%{name}.appdata.xml
 
 
 %post
@@ -97,17 +95,26 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %files
-%doc SheepShaver/COPYING SheepShaver/NEWS SheepShaver/doc/Linux/*
-%dir %{_sysconfdir}/SheepShaver/
-%config(noreplace) %{_sysconfdir}/SheepShaver/keycodes
-%{_sysconfdir}/SheepShaver/tunconfig
-%{_bindir}/SheepShaver
-%{_datadir}/icons/hicolor/32x32/apps/SheepShaver.png
-%{_datadir}/applications/*%{name}.desktop
-%{_mandir}/man1/SheepShaver.1*
+%doc %{name}/NEWS %{name}/doc/Linux/*
+%license %{name}/COPYING
+%dir %{_sysconfdir}/%{name}/
+%config(noreplace) %{_sysconfdir}/%{name}/keycodes
+%{_sysconfdir}/%{name}/tunconfig
+%{_bindir}/%{name}
+%{_datadir}/appdata/%{name}.appdata.xml
+%{_datadir}/applications/%{name}.desktop
+%{_datadir}/icons/hicolor/128x128/apps/%{name}.png
+%{_mandir}/man1/%{name}.1*
 
 
 %changelog
+* Thu Jul  7 2016 Hans de Goede <j.w.r.degoede@gmail.com> - 2.4-0.2.20160322
+- Sync version with BasiliskII package / latest upstream
+- New version comes with bundled cxmon
+- Fix FTBFS
+- Use proper github download URL
+- Add appdata
+
 * Sat May 16 2015 Hans de Goede <j.w.r.degoede@gmail.com> - 2.4-0.1.20150516
 - SheepShaver 2.4 git snapshot du-jour
 - Fix FTBFS (rf#3634)
