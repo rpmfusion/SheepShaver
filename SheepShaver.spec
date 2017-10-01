@@ -1,6 +1,6 @@
-%global commit b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1
+%global commit e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%define date 20160322
+%define date 20171001
 
 # Hardening breaks the jit
 %undefine _hardened_build
@@ -8,14 +8,13 @@
 Summary:        Power Macintosh emulator
 Name:           SheepShaver
 Version:        2.4
-Release:        0.4.%{date}%{?dist}
+Release:        0.5.%{date}%{?dist}
 License:        GPLv2+
 URL:            http://sheepshaver.cebix.net/
 Source0:        https://github.com/cebix/macemu/archive/%{commit}/BasiliskII-1.0-%{shortcommit}.tar.gz
 Source1:        %{name}.desktop
 Source2:        %{name}.png
 Source3:        %{name}.appdata.xml
-Patch0:         macemu-not-finding-cxmon.patch
 # Patch 10+ because these are for cxmon
 Patch10:        cxmon-3.2-hide-symbols.patch
 Patch11:        cxmon-3.2-strfmt.patch
@@ -39,11 +38,7 @@ G4 emulator, without MMU support, for non-PowerPC systems.
 
 
 %prep
-%setup -q -n macemu-%{commit}
-%patch0 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
+%autosetup -p1 -n macemu-%{commit}
 sed -i 's/\r//' %{name}/src/Unix/tinyxml2.cpp
 chmod -x %{name}/src/Unix/tinyxml2.cpp %{name}/src/Unix/tinyxml2.h
 chmod -x %{name}/src/kpx_cpu/src/mathlib/ieeefp.hpp
@@ -109,6 +104,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %changelog
+* Sun Oct  1 2017 Hans de Goede <j.w.r.degoede@gmail.com> - 2.4-0.5.20171001
+- Sync version with BasiliskII package / latest upstream
+
 * Thu Aug 31 2017 RPM Fusion Release Engineering <kwizart@rpmfusion.org> - 2.4-0.4.20160322
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
 

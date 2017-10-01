@@ -70,3 +70,92 @@ diff -up macemu-b58a9260bd1422a28e4c0b7b6bb71d26603bc3e1/SheepShaver/src/kpx_cpu
  #ifdef SHEEPSHAVER
  				   "-m",
  #endif
+--- macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/BasiliskII/src/emul_op.cpp~	2017-09-04 20:56:34.000000000 +0200
++++ macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/BasiliskII/src/emul_op.cpp	2017-10-01 18:12:37.352082375 +0200
+@@ -70,7 +70,7 @@ void EmulOp(uint16 opcode, M68kRegisters
+ 				   r->sr);
+ 			VideoQuitFullScreen();
+ #ifdef ENABLE_MON
+-			char *arg[4] = {"mon", "-m", "-r", NULL};
++			const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 			mon(3, arg);
+ #endif
+ 			QuitEmulator();
+@@ -575,7 +575,7 @@ void EmulOp(uint16 opcode, M68kRegisters
+ 				   r->a[0], r->a[1], r->a[2], r->a[3], r->a[4], r->a[5], r->a[6], r->a[7],
+ 				   r->sr);
+ #ifdef ENABLE_MON
+-			char *arg[4] = {"mon", "-m", "-r", NULL};
++			const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 			mon(3, arg);
+ #endif
+ 			break;
+@@ -592,7 +592,7 @@ void EmulOp(uint16 opcode, M68kRegisters
+ 				   r->a[0], r->a[1], r->a[2], r->a[3], r->a[4], r->a[5], r->a[6], r->a[7],
+ 				   r->sr);
+ #ifdef ENABLE_MON
+-			char *arg[4] = {"mon", "-m", "-r", NULL};
++			const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 			mon(3, arg);
+ #endif
+ 			QuitEmulator();
+--- macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/BasiliskII/src/uae_cpu/newcpu.h~	2017-09-04 20:56:34.000000000 +0200
++++ macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/BasiliskII/src/uae_cpu/newcpu.h	2017-10-01 18:15:57.469639476 +0200
+@@ -206,7 +206,7 @@ static __inline__ void m68k_setpc (uaecp
+ 	if (IS_BREAK_POINT(newpc)) {
+ 		printf("Stopped at break point address: %08lx. Last PC: %08lx\n", newpc, previous_pc);
+ 		m68k_dumpstate(NULL);
+-		char *arg[4] = {"mon", "-m", "-r", NULL};
++		const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 		mon(3, arg);
+ 	}
+ #endif // end of #if ENABLE_MON
+@@ -223,7 +223,7 @@ static __inline__ void m68k_incpc (uae_s
+ 	if (IS_BREAK_POINT(next_pc)) {
+ 		printf("Stopped at break point address: %08lx. Last PC: %08lx\n", next_pc, previous_pc);
+ 		m68k_dumpstate(NULL);
+-		char *arg[4] = {"mon", "-m", "-r", NULL};
++		const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 		mon(3, arg);
+ 	}
+ #endif // end of #if ENABLE_MON
+--- macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/BasiliskII/src/Unix/main_unix.cpp~	2017-09-04 20:56:34.000000000 +0200
++++ macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/BasiliskII/src/Unix/main_unix.cpp	2017-10-01 18:17:56.182563173 +0200
+@@ -291,7 +291,7 @@ static void sigsegv_dump_state(sigsegv_i
+ #endif
+ 	VideoQuitFullScreen();
+ #ifdef ENABLE_MON
+-	char *arg[4] = {"mon", "-m", "-r", NULL};
++	const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 	mon(3, arg);
+ #endif
+ 	QuitEmulator();
+@@ -948,7 +948,7 @@ static void sigint_handler(...)
+ 	m68k_dumpstate(&nextpc);
+ #endif
+ 	VideoQuitFullScreen();
+-	char *arg[4] = {"mon", "-m", "-r", NULL};
++	const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 	mon(3, arg);
+ 	QuitEmulator();
+ }
+@@ -1495,7 +1495,7 @@ ill:		printf("SIGILL num %d, code %d\n",
+ 
+ 			VideoQuitFullScreen();
+ #ifdef ENABLE_MON
+-			char *arg[4] = {"mon", "-m", "-r", NULL};
++			const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 			mon(3, arg);
+ #endif
+ 			QuitEmulator();
+--- macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/SheepShaver/src/Unix/main_unix.cpp~	2017-09-04 20:56:34.000000000 +0200
++++ macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/SheepShaver/src/Unix/main_unix.cpp	2017-10-01 18:18:04.246625919 +0200
+@@ -1402,7 +1402,7 @@ static void *tick_func(void *arg)
+ #ifdef ENABLE_MON
+ 			// Start up mon in real-mode
+ 			printf("Welcome to the sheep factory.\n");
+-			char *arg[4] = {"mon", "-m", "-r", NULL};
++			const char *arg[4] = {"mon", "-m", "-r", NULL};
+ 			mon(3, arg);
+ #endif
+ 			return NULL;
