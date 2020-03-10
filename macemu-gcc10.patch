@@ -1,0 +1,12 @@
+diff -up macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/SheepShaver/src/video.cpp~ macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/SheepShaver/src/video.cpp
+--- macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/SheepShaver/src/video.cpp~	2017-09-04 20:56:34.000000000 +0200
++++ macemu-e273bb1a0b4f6e35bcdbf6cf918aa0ca3e6d99da/SheepShaver/src/video.cpp	2020-03-10 19:38:26.940545605 +0100
+@@ -741,7 +741,7 @@ static int16 VideoStatus(uint32 pb, VidL
+ 				case kDisplayModeIDCurrent:
+ 					work_id = csSave->saveData;
+ 					break;
+-				case kDisplayModeIDFindFirstResolution:
++				case (int)kDisplayModeIDFindFirstResolution:
+ 					work_id = APPLE_ID_MIN;
+ 					while (!has_mode(work_id))
+ 						work_id ++;

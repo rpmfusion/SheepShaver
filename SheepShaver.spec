@@ -8,13 +8,14 @@
 Summary:        Power Macintosh emulator
 Name:           SheepShaver
 Version:        2.4
-Release:        0.10.%{date}%{?dist}
+Release:        0.11.%{date}%{?dist}
 License:        GPLv2+
 URL:            http://sheepshaver.cebix.net/
 Source0:        https://github.com/cebix/macemu/archive/%{commit}/BasiliskII-1.0-%{shortcommit}.tar.gz
 Source1:        %{name}.desktop
 Source2:        %{name}.png
 Source3:        %{name}.appdata.xml
+Patch1:         macemu-gcc10.patch
 # Patch 10+ because these are for cxmon
 Patch10:        cxmon-3.2-hide-symbols.patch
 Patch11:        cxmon-3.2-strfmt.patch
@@ -77,19 +78,6 @@ appstream-util validate-relax --nonet \
     %{buildroot}%{_datadir}/appdata/%{name}.appdata.xml
 
 
-%post
-touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
-
-%postun
-if [ $1 -eq 0 ] ; then
-    touch --no-create %{_datadir}/icons/hicolor &>/dev/null
-    gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-fi
-
-%posttrans
-gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-
-
 %files
 %doc %{name}/NEWS %{name}/doc/Linux/*
 %license %{name}/COPYING
@@ -104,6 +92,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %changelog
+* Tue Mar 10 2020 Hans de Goede <j.w.r.degoede@gmail.com> - 2.4-0.11.20171001
+- Fix FTBFS
+
 * Tue Feb 04 2020 RPM Fusion Release Engineering <leigh123linux@gmail.com> - 2.4-0.10.20171001
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
