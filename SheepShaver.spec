@@ -8,7 +8,7 @@
 Summary:        Power Macintosh emulator
 Name:           SheepShaver
 Version:        2.4
-Release:        0.14.%{date}%{?dist}
+Release:        0.15.%{date}%{?dist}
 License:        GPLv2+
 URL:            http://sheepshaver.cebix.net/
 Source0:        https://github.com/cebix/macemu/archive/%{commit}/BasiliskII-1.0-%{shortcommit}.tar.gz
@@ -92,6 +92,9 @@ appstream-util validate-relax --nonet \
 
 
 %changelog
+* Wed Feb 09 2022 RPM Fusion Release Engineering <sergiomb@rpmfusion.org> - 2.4-0.15.20171001
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
 * Mon Aug 02 2021 RPM Fusion Release Engineering <leigh123linux@gmail.com> - 2.4-0.14.20171001
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 
