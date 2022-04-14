@@ -8,7 +8,7 @@
 Summary:        Power Macintosh emulator
 Name:           SheepShaver
 Version:        2.4
-Release:        0.15.%{date}%{?dist}
+Release:        0.16.%{date}%{?dist}
 License:        GPLv2+
 URL:            http://sheepshaver.cebix.net/
 Source0:        https://github.com/cebix/macemu/archive/%{commit}/BasiliskII-1.0-%{shortcommit}.tar.gz
@@ -54,6 +54,11 @@ pushd %{name}/src/Unix
 mkdir obj
 %configure --datadir=%{_sysconfdir} --enable-ppc-emulator=yes \
     --disable-xf86-dga --enable-sdl-audio --with-bincue
+# autoconf 2.71 says The preprocessor macro `STDC_HEADERS' is obsolete
+# in AC_HEADER_STDC
+# For now, explicitly add STDC_HEADERS to config.h
+sed -i config.h -e '\@undef.*STDC_HEADERS@s|^.*$|#define STDC_HEADERS 1|'
+
 DYNGEN_CFLAGS="$(echo $RPM_OPT_FLAGS | sed s/-fstack-protector-strong//)"
 make %{?_smp_mflags} \
     DYNGEN_CFLAGS="$DYNGEN_CFLAGS" DYNGEN_CXXFLAGS="$DYNGEN_CFLAGS"
@@ -92,6 +97,9 @@ appstream-util validate-relax --nonet \
 
 
 %changelog
+* Thu Apr 14 2022 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.4-0.16.20171001
+- Fix build with autoconf 2.71
+
 * Wed Feb 09 2022 RPM Fusion Release Engineering <sergiomb@rpmfusion.org> - 2.4-0.15.20171001
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
